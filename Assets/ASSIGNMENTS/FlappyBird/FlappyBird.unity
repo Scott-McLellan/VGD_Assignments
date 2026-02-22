@@ -2183,6 +2183,7 @@ GameObject:
   - component: {fileID: 1053538174}
   - component: {fileID: 1053538175}
   - component: {fileID: 1053538176}
+  - component: {fileID: 1053538177}
   m_Layer: 6
   m_Name: Bird1-1_1
   m_TagString: Player
@@ -2237,7 +2238,7 @@ SpriteRenderer:
   m_SortingLayerID: 2034152741
   m_SortingLayer: 3
   m_SortingOrder: 0
-  m_Sprite: {fileID: 41903092, guid: 7b10d5d322465894c9e85daba2bb65f3, type: 3}
+  m_Sprite: {fileID: -1715155579, guid: 7b10d5d322465894c9e85daba2bb65f3, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -2350,6 +2351,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BirdMovement
   rb: {fileID: 1053538170}
   audioClip: {fileID: 8300000, guid: f1e7a944963bbc847b9465cc97a321ea, type: 3}
+  isDead: 0
   forceAmmount: 3
 --- !u!114 &1053538173
 MonoBehaviour:
@@ -2657,6 +2659,28 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!95 &1053538177
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1053538167}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: e089f3b9c2973bb49866f4fa2ddc27ec, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1107258234
 GameObject:
   m_ObjectHideFlags: 0
