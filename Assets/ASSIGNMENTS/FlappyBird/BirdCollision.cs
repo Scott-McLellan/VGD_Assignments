@@ -14,16 +14,26 @@ public class BirdCollision : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.tag == "Pipe")
+        if (collision.collider.CompareTag("Pipe"))
         {
+            if (birdMovement.isDead)
+            {
+                Physics2D.IgnoreCollision(GetComponent<Collider2D>(), collision.collider, true);
+                return;
+            }
+
             PlayPipeCrashSound();
             birdMovement.Die();
+
+            Physics2D.IgnoreCollision(GetComponent<Collider2D>(), collision.collider, true);
+            return;
         }
 
-        if (collision.gameObject.tag == "Ground")
+        if (collision.collider.CompareTag("Ground"))
         {
             PlayGroundSound();
             gameManager.GameOver();
+            return;
         }
     }
     

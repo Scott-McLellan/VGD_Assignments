@@ -10,6 +10,7 @@ public class ScoreTrigger : MonoBehaviour
     private AudioSource audioSource;
     public AudioClip audioClip;
     
+    private BirdMovement birdMovement;
     public int score;
 
     void Start()
@@ -17,6 +18,7 @@ public class ScoreTrigger : MonoBehaviour
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         birdPrefab = GameObject.FindWithTag("Player");
         audioSource = GetComponent<AudioSource>();
+        birdMovement = birdPrefab.GetComponent<BirdMovement>();
     }
     
     public void PlaySound()
@@ -28,6 +30,8 @@ public class ScoreTrigger : MonoBehaviour
     {
         if (other.transform.tag == "Player")
         {
+            if (birdMovement.isDead) return;
+            
             gameManager.AddScore(1);
             PlaySound();
         } 

@@ -7,23 +7,31 @@ public class BirdMovement : MonoBehaviour
     private AudioSource audioSource;
     public AudioClip audioClip;
 
-    private bool isDead = false;
+    public bool isDead = false;
     
     public float forceAmmount;
     
+    private Animator animator;
+    
     public void Die()
     {
+        if (isDead) return;
+        
         isDead = true;
         rb.linearVelocity = Vector2.zero;
 
-        rb.freezeRotation = false;
+       
         rb.angularVelocity = -250f;
+        rb.linearVelocity = Vector2.zero;
+        
+        
     }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         audioSource = GetComponent<AudioSource>();
+        animator = GetComponent<Animator>();
     }
     
     public void PlaySound()
@@ -34,11 +42,14 @@ public class BirdMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (isDead) return;
+        
         if (Input.GetKeyDown(KeyCode.Space))
         {
             rb.linearVelocity = Vector2.zero;
             rb.AddForce(Vector2.up * forceAmmount, ForceMode2D.Impulse);
             PlaySound();
+            animator.SetTrigger("Flap");
         }
         
     }
