@@ -6,6 +6,9 @@ public class SpawnPipePair : MonoBehaviour
     public float timer;
     public float timerCooldown;
     public GameObject PipePair;
+
+    public float maxY;
+    public float minY;
     
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -22,7 +25,9 @@ public class SpawnPipePair : MonoBehaviour
         if (timer >= timerCooldown)
         {
             timer = 0;
-            Instantiate(PipePair, transform.position, Quaternion.identity);
+            float randomY = Random.Range(minY, maxY);
+            Vector3 spawnPosition = new Vector3(transform.position.x, randomY, 0f);
+            Instantiate(PipePair, spawnPosition, Quaternion.identity);
         }
     }
 }

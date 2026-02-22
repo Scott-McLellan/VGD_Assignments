@@ -5,28 +5,31 @@ public class ScoreTrigger : MonoBehaviour
 {
     public GameObject birdPrefab;
     
-    [SerializeField] private TMP_Text scoreText;
+    private GameManager gameManager;
     
-    [SerializeField] private GameManager gameManager;
+    private AudioSource audioSource;
+    public AudioClip audioClip;
     
     public int score;
+
+    void Start()
+    {
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        birdPrefab = GameObject.FindWithTag("Player");
+        audioSource = GetComponent<AudioSource>();
+    }
+    
+    public void PlaySound()
+    {
+        audioSource.PlayOneShot(audioClip);
+    }
     
     void OnTriggerEnter2D(Collider2D other)
     {
-        score++;
-        scoreText.text = score.ToString();
-        gameManager.score = score;
-        
-    }
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        if (other.transform.tag == "Player")
+        {
+            gameManager.AddScore(1);
+            PlaySound();
+        } 
     }
 }

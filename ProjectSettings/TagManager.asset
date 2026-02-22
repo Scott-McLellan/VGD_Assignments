@@ -7,6 +7,8 @@ TagManager:
   - Sphere
   - Cude
   - Cube
+  - Pipe
+  - Ground
   layers:
   - Default
   - TransparentFX
@@ -43,6 +45,15 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Background
+    uniqueID: 2082952523
+    locked: 0
+  - name: Ground
+    uniqueID: 2627476891
+    locked: 0
+  - name: GameObjects
+    uniqueID: 2034152741
     locked: 0
   m_RenderingLayers:
   - Default

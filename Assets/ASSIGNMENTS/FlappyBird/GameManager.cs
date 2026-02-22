@@ -4,6 +4,7 @@ using TMPro;
 public class GameManager : MonoBehaviour
 {
     [SerializeField] private TMP_Text scoreText;
+    [SerializeField] private TMP_Text finalScoreText;
     [SerializeField] private TMP_Text highScoreText;
     public GameObject gameOverPanel;
     public GameObject pauseButton;
@@ -21,7 +22,8 @@ public class GameManager : MonoBehaviour
 
         gameOverPanel.SetActive(false);
         
-        scoreText.text = "Score: " + score;
+        
+        finalScoreText.text = "Score: " + score;
         highScoreText.text = "HighScore: " + highScore;
     }
 
@@ -43,7 +45,8 @@ public class GameManager : MonoBehaviour
             PlayerPrefs.SetInt("HighScore", highScore);
             PlayerPrefs.Save();
         }
-        scoreText.text = "Score: " + score;
+        scoreText.text = score.ToString();
+        finalScoreText.text = "Score: " + score;
         highScoreText.text = "HighScore: " + highScore;
     }
 
