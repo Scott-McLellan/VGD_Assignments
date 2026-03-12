@@ -9,6 +9,7 @@ public class MouseLook : MonoBehaviour
 
     void Start()
     {
+        playerBody = GameObject.FindGameObjectWithTag("Player").transform;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }

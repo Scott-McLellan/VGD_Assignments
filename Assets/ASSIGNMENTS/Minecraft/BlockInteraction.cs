@@ -10,7 +10,9 @@ public class BlockInteraction : MonoBehaviour
     
     public GameObject blockPrefab;
     
-    public LayerMask groundLayer;
+    public LayerMask BlockLayer;
+    
+    public LayerMask GroundLayer;
 
     
     
@@ -24,11 +26,12 @@ public class BlockInteraction : MonoBehaviour
     void Update()
     {
         Ray ray = new  Ray(playerCamera.transform.position, playerCamera.transform.forward);
+        Debug.DrawRay(playerCamera.transform.position, playerCamera.transform.forward * reachDistance, Color.red);
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, reachDistance, groundLayer))
+        if (Physics.Raycast(ray, out hit, reachDistance, BlockLayer))
         {
-            if (Input.GetMouseButton(0))
+            if (Input.GetMouseButton(1))
             {
                 Vector3 placePosition = hit.collider.gameObject.transform.position + hit.normal;
                 
@@ -40,12 +43,8 @@ public class BlockInteraction : MonoBehaviour
                 }
             }
 
-            if (Input.GetMouseButton(1))
+            if (Input.GetMouseButton(0))
             {
-                if (Physics.Raycast(ray, out hit, reachDistance, groundLayer))
-                {
-                    return;
-                }
                 Destroy(hit.collider.gameObject);
             }
         }
