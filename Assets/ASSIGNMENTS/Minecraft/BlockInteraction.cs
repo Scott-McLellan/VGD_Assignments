@@ -31,11 +31,11 @@ public class BlockInteraction : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, reachDistance, BlockLayer))
         {
-            if (Input.GetMouseButton(1))
+            if (Input.GetMouseButtonDown(1))
             {
-                Vector3 placePosition = hit.collider.gameObject.transform.position + hit.normal;
+                Vector3 placePosition = hit.transform.position + hit.normal;
                 
-                placePosition = new Vector3(Mathf.Round(placePosition.y), Mathf.Round(placePosition.y), Mathf.Round(placePosition.z));
+                placePosition = new Vector3(Mathf.Round(placePosition.x), Mathf.Round(placePosition.y), Mathf.Round(placePosition.z));
 
                 if (!Physics.CheckBox(placePosition, Vector3.one * 0.45f))
                 {
@@ -43,7 +43,7 @@ public class BlockInteraction : MonoBehaviour
                 }
             }
 
-            if (Input.GetMouseButton(0))
+            if (Input.GetMouseButtonDown(0))
             {
                 Destroy(hit.collider.gameObject);
             }

@@ -295,7 +295,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BlockInteraction
   playerCamera: {fileID: 1962393760}
-  reachDistance: 6
+  reachDistance: 4
   blockPrefab: {fileID: 4748116743250444849, guid: 9a9822c8a2fd5644fbfa7bfa4b897f2a, type: 3}
   BlockLayer:
     serializedVersion: 2
@@ -744,6 +744,7 @@ GameObject:
   - component: {fileID: 1856184502}
   - component: {fileID: 1856184505}
   - component: {fileID: 1856184504}
+  - component: {fileID: 1856184506}
   m_Layer: 0
   m_Name: MeshGeneration
   m_TagString: Untagged
@@ -763,10 +764,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93f90efca0ac78a4f851a4398804f8d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GeneratingMeshes
+  material: {fileID: 0}
   xSize: 10
   ySize: 3
   zSize: 10
-  cubeMaterial: {fileID: 2100000, guid: 3e4afdea6a96cf54eabdacd6e8a12478, type: 2}
+  cubeMaterial: {fileID: 2100000, guid: 30bfd25c4366e894f97913b297fc77a0, type: 2}
 --- !u!4 &1856184503
 Transform:
   m_ObjectHideFlags: 0
@@ -838,6 +840,19 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1856184506
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1856184501}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93672e3cdaef3c54a961b1cf640024ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CustomPlaneUV
+  material: {fileID: 2100000, guid: 30bfd25c4366e894f97913b297fc77a0, type: 2}
 --- !u!1 &1962393758
 GameObject:
   m_ObjectHideFlags: 0
@@ -1143,10 +1158,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Cube
       objectReference: {fileID: 0}
+    - target: {fileID: 4748116743250444849, guid: 9a9822c8a2fd5644fbfa7bfa4b897f2a, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8184951051693681388, guid: 9a9822c8a2fd5644fbfa7bfa4b897f2a, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: c86c6dc904547144fb8a92e378552b35, type: 2}
+      objectReference: {fileID: 2100000, guid: 309d19c867f8ac4469237efd1d0ca36c, type: 2}
     - target: {fileID: 9033490865943934740, guid: 9a9822c8a2fd5644fbfa7bfa4b897f2a, type: 3}
       propertyPath: m_LocalPosition.x
       value: 6.374
