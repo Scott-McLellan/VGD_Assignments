@@ -1,5 +1,19 @@
+using System.Collections.Generic;
+using System.Numerics;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
+using Vector2 = UnityEngine.Vector2;
+using Vector3 = UnityEngine.Vector3;
+
+
+public enum BlockType {
+    Air,
+    Grass,
+    Dirt,
+    Stone,
+    Wood,
+    Leaves
+}
 
 public class GeneratingMeshes : MonoBehaviour
 {
@@ -10,65 +24,136 @@ public class GeneratingMeshes : MonoBehaviour
     int[] triangles;
 
     public int xSize = 5;
-    public int ySize = 3;
+    public int ySize = 10;
     public int zSize = 5;
+
+    public int seed;
+
+    private float perlinNoice;
+
+    public float MaxHeight;
+    public float MinHeight;
+
+    public float offset = 0.1f;
+
+    public float terrainVariation = 2f;
 
     Mesh grassMesh;
     Mesh stoneMesh;
     Mesh dirtMesh;
+    Mesh woodMesh;
+    Mesh leavesMesh;
     
-    
+    Dictionary<Vector3Int, BlockType> blocks = new Dictionary<Vector3Int, BlockType>();
 
     public Material cubeMaterial;
+    
+    
 
+    public void SpawnBlocK(BlockType blockType, Vector3 position)
+    {
+        Vector3Int intPosition = Vector3Int.RoundToInt(position);
+
+        if (blocks.ContainsKey(intPosition) && blocks[intPosition] != BlockType.Air)
+        {
+            Debug.LogWarning("Can't spawn a block when there is already a block at this position.");
+            return;
+        }
+        
+        blocks.Add(intPosition, blockType);
+        
+        if (blockType == BlockType.Air)
+        {
+            Debug.LogWarning("Trying to spawn an Air block! That doesn't make sense...");
+            return;
+        }
+        
+        GameObject cube = new GameObject("Block");
+
+        cube.AddComponent<BoxCollider>();
+
+        cube.transform.position = position;
+                    
+        cube.layer = LayerMask.NameToLayer("Block");
+                    
+        MeshFilter mf = cube.AddComponent<MeshFilter>();
+
+        switch (blockType)
+        {
+            case BlockType.Grass:
+                mf.sharedMesh = grassMesh;
+                break;
+            case BlockType.Dirt:
+                mf.sharedMesh = dirtMesh;
+                break;
+            case BlockType.Stone:
+                mf.sharedMesh = stoneMesh;
+                break;
+            case BlockType.Wood:
+                mf.sharedMesh = woodMesh;
+                break;
+            case BlockType.Leaves:
+                mf.sharedMesh = leavesMesh;
+                break;
+        }
+                    
+        MeshRenderer mr = cube.AddComponent<MeshRenderer>();
+        mr.material = cubeMaterial;
+    }
+
+    public void RemoveBlock(GameObject block)
+    {
+        Vector3Int position = Vector3Int.RoundToInt(block.transform.position);
+        if (!blocks.ContainsKey(position))
+        {
+            Debug.LogWarning("Trying to remove a block that doesn't exist!");
+            return;
+        }       
+        
+        blocks.Remove(position);
+        GameObject.Destroy(block);
+    }
+    
     // Start is called once before the first execution of Update
     void Start()
     {
-        
-        
+
+
+        float RandomYValue = Random.Range(0, MaxHeight + 1);
         
         
         CreateMesh();
         CreateDirt();
         CreateGrass();
         CreateCobble();
+        CreateWood();
+        CreateLeaves();
 
         for (int x = 0; x < xSize; x++)
         {
-            for (int y = 0; y < ySize; y++)
+            for (int z = 0; z < zSize; z++)
             {
-                for (int z = 0; z < zSize; z++)
+                perlinNoice = Mathf.PerlinNoise((x + seed) * offset,(z + seed) * offset);
+                float terrainHeight = MinHeight + Mathf.FloorToInt(perlinNoice * terrainVariation);
+                
+                for (int y = 0; y <= terrainHeight; y++)
                 {
-                    GameObject cube = new GameObject("Cube");
-
-                    cube.AddComponent<BoxCollider>();
-                    
-                    cube.transform.position = new Vector3(x, y, z);
-                    
-                    cube.layer = LayerMask.NameToLayer("Block");
-                    
-                    MeshFilter mf = cube.AddComponent<MeshFilter>();
-
-                    if (y == 0)
+                    if (y == terrainHeight)
                     {
-                        mf.mesh = stoneMesh;
+                        SpawnBlocK(BlockType.Grass, new Vector3(x, y, z));
                     }
-                    else if (y == 1)
+                    else if (y >= terrainHeight - 2)
                     {
-                        mf.mesh = dirtMesh;
+                        SpawnBlocK(BlockType.Dirt, new Vector3(x, y, z));
                     }
-                    else if (y == 2)
-                    {
-                        mf.mesh = grassMesh;
+                    else
+                    { 
+                        SpawnBlocK(BlockType.Stone, new Vector3(x, y, z));
                     }
-                    
-                    MeshRenderer mr = cube.AddComponent<MeshRenderer>();
-                    mr.material = cubeMaterial;
                 }
             }
         }
     }
-
 
     public void AppyUVS(int x, int y)
     {
@@ -149,6 +234,30 @@ public class GeneratingMeshes : MonoBehaviour
         grassMesh.triangles = triangles;
         grassMesh.uv = uvs;
         grassMesh.RecalculateNormals();
+        
+    }
+
+    void CreateWood()
+    {
+        AppyUVS(4, 14);
+        
+        woodMesh = new Mesh();
+        woodMesh.vertices = vertices;
+        woodMesh.triangles = triangles;
+        woodMesh.uv = uvs;
+        woodMesh.RecalculateNormals();
+    }
+
+    void CreateLeaves()
+    {
+        AppyUVS(4, 12);
+        
+        leavesMesh = new Mesh();
+        
+        leavesMesh.vertices = vertices;
+        leavesMesh.triangles = triangles;
+        leavesMesh.uv = uvs;
+        leavesMesh.RecalculateNormals();
         
     }
 

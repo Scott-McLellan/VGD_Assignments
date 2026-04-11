@@ -6,10 +6,10 @@ public class PlayerMovement : MonoBehaviour
 
     public float walkSpeed = 5f;
     public float sprintSpeed = 10f;
-    public float jumpForce = 10f;
+    public float jumpForce = 1.5f;
     
     public float groundCheckDistance = 1.1f;
-    public LayerMask groundLayer;
+    public LayerMask blockLayer;
 
     float xRotation = 0f;
     
@@ -36,7 +36,7 @@ public class PlayerMovement : MonoBehaviour
         Ray ray = new Ray(transform.position, -transform.up);
         
         
-        if (Physics.Raycast(ray, out RaycastHit hit,  groundCheckDistance, groundLayer))
+        if (Physics.Raycast(ray, out RaycastHit hit,  groundCheckDistance, blockLayer))
         {
             canJump = true;
         }

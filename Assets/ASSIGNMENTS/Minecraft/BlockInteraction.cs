@@ -8,12 +8,11 @@ public class BlockInteraction : MonoBehaviour
 
     public float reachDistance = 6f;
     
-    public GameObject blockPrefab;
-    
     public LayerMask BlockLayer;
     
     public LayerMask GroundLayer;
 
+    public GeneratingMeshes generatingMeshes;
     
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -39,13 +38,15 @@ public class BlockInteraction : MonoBehaviour
 
                 if (!Physics.CheckBox(placePosition, Vector3.one * 0.45f))
                 {
-                    Instantiate(blockPrefab, placePosition, Quaternion.identity);
+                    generatingMeshes.SpawnBlocK(BlockType.Stone, placePosition);
+                    //Instantiate(blockPrefab, placePosition, Quaternion.identity);
                 }
             }
 
             if (Input.GetMouseButtonDown(0))
             {
-                Destroy(hit.collider.gameObject);
+                generatingMeshes.RemoveBlock(hit.collider.gameObject);
+                //Destroy(hit.collider.gameObject);
             }
         }
     }
