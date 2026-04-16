@@ -896,7 +896,7 @@ MonoBehaviour:
   xSize: 20
   ySize: 5
   zSize: 20
-  seed: 10
+  seed: 15
   MaxHeight: 14
   MinHeight: 3
   offset: 0.1

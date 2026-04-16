@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using UnityEngine;
+using UnityEngine.Analytics;
 using UnityEngine.Rendering.Universal;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
@@ -23,13 +24,13 @@ public class GeneratingMeshes : MonoBehaviour
     private Vector2[] uvs;
     int[] triangles;
 
-    public int xSize = 5;
-    public int ySize = 10;
-    public int zSize = 5;
+    public int xSize = 20;
+    public int ySize = 5;
+    public int zSize = 20;
 
     public int seed;
 
-    private float perlinNoice;
+    private float perlinNoise;
 
     public float MaxHeight;
     public float MinHeight;
@@ -133,14 +134,24 @@ public class GeneratingMeshes : MonoBehaviour
         {
             for (int z = 0; z < zSize; z++)
             {
-                perlinNoice = Mathf.PerlinNoise((x + seed) * offset,(z + seed) * offset);
-                float terrainHeight = MinHeight + Mathf.FloorToInt(perlinNoice * terrainVariation);
+                perlinNoise = Mathf.PerlinNoise((x + seed) * offset,(z + seed) * offset);
+                
+                // Perlin Noise for the Tree Spawner and uses the seed to add more randomness
+                float treeNoise = Mathf.PerlinNoise((x + seed) * offset,(z + seed) * offset);
+                
+                float terrainHeight = MinHeight + Mathf.FloorToInt(perlinNoise * terrainVariation);
                 
                 for (int y = 0; y <= terrainHeight; y++)
                 {
+                    // Spawns Trees
                     if (y == terrainHeight)
                     {
                         SpawnBlocK(BlockType.Grass, new Vector3(x, y, z));
+
+                        if (treeNoise < 0.5f && !IsTooCloseToTree(x, z))
+                        {
+                            TrySpawnTree(x, y , z);
+                        }
                     }
                     else if (y >= terrainHeight - 2)
                     {
@@ -155,57 +166,133 @@ public class GeneratingMeshes : MonoBehaviour
         }
     }
 
-    public void AppyUVS(int x, int y)
+    public void AppyUVS(int sideX, int sideY, int topX, int topY, int  bottomX, int bottomY)
     {
-        float left_corner = x / 16f;
-        float right_corner = (x + 1) / 16f;
-        float top_corner = (y + 1) / 16f;
-        float bottom_corner = y / 16f;
+        float sideLeft = sideX / 16f;
+        float sideRight = (sideX + 1) / 16f;
+        float sideTop = (sideY + 1) / 16f;
+        float sideBottom = sideY / 16f;
+        
+        float topLeft = topX / 16f;
+        float topRight = (topX + 1) / 16f;
+        float topTop = (topY + 1) / 16f;
+        float topBottom = topY / 16f;
+        
+        float bottomLeft = bottomX / 16f;
+        float bottomRight = (bottomX + 1) / 16f;
+        float bottomTop = (bottomY + 1) / 16f;
+        float bottomBottom = bottomY / 16f;
         
         uvs = new Vector2[]
         {
             // Front
-            new Vector2(left_corner, bottom_corner), // bottom-left
-            new Vector2(right_corner, bottom_corner), // bottom-right
-            new Vector2(right_corner, top_corner), // top-right
-            new Vector2(left_corner, top_corner), // top-left
-            
+            new Vector2(sideLeft, sideBottom),
+            new Vector2(sideRight, sideBottom),
+            new Vector2(sideRight, sideTop),
+            new Vector2(sideLeft, sideTop),
+
             // Back
-            new Vector2(left_corner, bottom_corner),
-            new Vector2(right_corner, bottom_corner),
-            new Vector2(right_corner, top_corner),
-            new Vector2(left_corner, top_corner),
-            
+            new Vector2(sideLeft, sideBottom),
+            new Vector2(sideRight, sideBottom),
+            new Vector2(sideRight, sideTop),
+            new Vector2(sideLeft, sideTop),
+
             // Left
-            new Vector2(left_corner, bottom_corner),
-            new Vector2(right_corner, bottom_corner),
-            new Vector2(right_corner, top_corner),
-            new Vector2(left_corner, top_corner),
+            new Vector2(sideLeft, sideBottom),
+            new Vector2(sideRight, sideBottom),
+            new Vector2(sideRight, sideTop),
+            new Vector2(sideLeft, sideTop),
 
             // Right
-            new Vector2(left_corner, bottom_corner),
-            new Vector2(right_corner, bottom_corner),
-            new Vector2(right_corner, top_corner),
-            new Vector2(left_corner, top_corner),
+            new Vector2(sideLeft, sideBottom),
+            new Vector2(sideRight, sideBottom),
+            new Vector2(sideRight, sideTop),
+            new Vector2(sideLeft, sideTop),
 
             // Top
-            new Vector2(left_corner, bottom_corner),
-            new Vector2(right_corner, bottom_corner),
-            new Vector2(right_corner, top_corner),
-            new Vector2(left_corner, top_corner),
+            new Vector2(topLeft, topBottom),
+            new Vector2(topRight, topBottom),
+            new Vector2(topRight, topTop),
+            new Vector2(topLeft, topTop),
 
             // Bottom
-            new Vector2(left_corner, bottom_corner),
-            new Vector2(right_corner, bottom_corner),
-            new Vector2(right_corner, top_corner),
-            new Vector2(left_corner, top_corner)
+            new Vector2(bottomLeft, bottomBottom),
+            new Vector2(bottomRight, bottomBottom),
+            new Vector2(bottomRight, bottomTop),
+            new Vector2(bottomLeft, bottomTop)
         };
         
     }
 
+    void TrySpawnTree(int x, int y, int z)
+    {
+        // Trunk Height
+        int treeHeight = Random.Range(4, 10);
+
+        for (int i = 1; i <= treeHeight; i++)
+        {
+            SpawnBlocK(BlockType.Wood, new Vector3(x, y + i, z));
+        }
+        
+        
+        // Creating the leaves
+        int leafY = y +  treeHeight;
+
+        // Creating a Cube shape with the leaves
+        // Going from -2 to 2 so that the leaves spawn
+        // on the left and right side of the trunk
+        for (int lx = -2; lx <= 2; lx++)
+        {
+            for (int lz = -2; lz <= 2; lz++)
+            {
+                for (int ly = -1; ly <= 1; ly++)
+                {
+                    Vector3Int leafPosition = new Vector3Int(x + lx, leafY + ly, z +  lz);
+
+                    if (lx == 0 && lz == 0 && ly <= 0)
+                    {
+                        continue;
+                    }
+                    if (!blocks.ContainsKey(Vector3Int.RoundToInt(leafPosition)))
+                    {
+                        SpawnBlocK(BlockType.Leaves, leafPosition);
+                    }
+                    
+                    
+                }
+            }
+        }
+    }
+    
+    // Checks to see if the tress are too close to each other
+    bool IsTooCloseToTree(int x, int z)
+    {
+        int radius = 4;
+
+        for (int dx = -radius; dx <= radius; dx++)
+        {
+            for (int dz = -radius; dz <= radius; dz++)
+            {
+                Vector3Int checkPos = new Vector3Int(x + dx, 0, z + dz);
+
+                for (int y = 0; y < ySize + 10; y++)
+                {
+                    Vector3Int pos = new Vector3Int(x + dx, y, z + dz);
+
+                    if (blocks.ContainsKey(pos) && blocks[pos] == BlockType.Leaves)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     void CreateCobble()
     {
-        AppyUVS(0, 14);
+        AppyUVS(0, 14, 0, 14, 0, 14);
         
         stoneMesh = new Mesh();
         stoneMesh.vertices = vertices;
@@ -216,7 +303,7 @@ public class GeneratingMeshes : MonoBehaviour
 
     void CreateDirt()
     {
-        AppyUVS(2, 15);
+        AppyUVS(2, 15, 2, 15, 2, 15);
         
         dirtMesh = new Mesh();
         dirtMesh.vertices = vertices;
@@ -227,7 +314,7 @@ public class GeneratingMeshes : MonoBehaviour
 
     void CreateGrass()
     {
-        AppyUVS(0, 15);
+        AppyUVS(3, 15, 0, 15, 2, 15);
 
         grassMesh = new Mesh();
         grassMesh.vertices = vertices;
@@ -239,7 +326,7 @@ public class GeneratingMeshes : MonoBehaviour
 
     void CreateWood()
     {
-        AppyUVS(4, 14);
+        AppyUVS(4, 14, 5, 14, 5, 14);
         
         woodMesh = new Mesh();
         woodMesh.vertices = vertices;
@@ -250,7 +337,7 @@ public class GeneratingMeshes : MonoBehaviour
 
     void CreateLeaves()
     {
-        AppyUVS(4, 12);
+        AppyUVS(4, 12, 4, 12, 4, 12);
         
         leavesMesh = new Mesh();
         
