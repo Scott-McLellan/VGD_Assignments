@@ -13,7 +13,10 @@ public enum BlockType {
     Dirt,
     Stone,
     Wood,
-    Leaves
+    Leaves,
+    Coal,
+    Iron,
+    Diamond
 }
 
 public class GeneratingMeshes : MonoBehaviour
@@ -44,8 +47,17 @@ public class GeneratingMeshes : MonoBehaviour
     Mesh dirtMesh;
     Mesh woodMesh;
     Mesh leavesMesh;
+    Mesh coalMesh;
+    Mesh ironMesh;
+    Mesh diamondMesh;
     
     Dictionary<Vector3Int, BlockType> blocks = new Dictionary<Vector3Int, BlockType>();
+    
+    List<Vector3Int> stonePositions = new List<Vector3Int>();
+
+    public float coalChance = 0.55f;
+    public float ironChance = 0.35f;
+    public float diamondChance = 0.10f;
 
     public Material cubeMaterial;
     
@@ -96,6 +108,15 @@ public class GeneratingMeshes : MonoBehaviour
             case BlockType.Leaves:
                 mf.sharedMesh = leavesMesh;
                 break;
+            case BlockType.Coal:
+                mf.sharedMesh = coalMesh;
+                break;
+            case BlockType.Iron:
+                mf.sharedMesh = ironMesh;
+                break;
+            case BlockType.Diamond:
+                mf.sharedMesh = diamondMesh;
+                break;
         }
                     
         MeshRenderer mr = cube.AddComponent<MeshRenderer>();
@@ -119,6 +140,7 @@ public class GeneratingMeshes : MonoBehaviour
     void Start()
     {
 
+        Random.InitState(seed);
 
         float RandomYValue = Random.Range(0, MaxHeight + 1);
         
@@ -129,6 +151,9 @@ public class GeneratingMeshes : MonoBehaviour
         CreateCobble();
         CreateWood();
         CreateLeaves();
+        CreateCoal();
+        CreateIron();
+        CreateDiamond();
 
         for (int x = 0; x < xSize; x++)
         {
@@ -159,11 +184,16 @@ public class GeneratingMeshes : MonoBehaviour
                     }
                     else
                     { 
-                        SpawnBlocK(BlockType.Stone, new Vector3(x, y, z));
+                        Vector3Int stonePos = new Vector3Int(x, y, z);
+                        SpawnBlocK(BlockType.Stone, stonePos);
+                        stonePositions.Add(stonePos);
                     }
                 }
             }
         }
+        Debug.Log("Stone positions count: " + stonePositions.Count);
+        Random.InitState(seed + 100);
+        GenerateOres();
     }
 
     public void AppyUVS(int sideX, int sideY, int topX, int topY, int  bottomX, int bottomY)
@@ -289,6 +319,161 @@ public class GeneratingMeshes : MonoBehaviour
 
         return false;
     }
+    
+    
+    
+    void ReplaceStoneWithOre(Vector3Int position, BlockType oreType)
+    {
+        if (!blocks.ContainsKey(position))
+        {
+            return;
+        }
+
+        if (blocks[position] != BlockType.Stone)
+        {
+            return;
+        }
+
+        // Remove the stone from the dictionary first
+        blocks.Remove(position);
+
+        // Find and destroy the old block GameObject
+        Collider[] hits = Physics.OverlapBox(position, Vector3.one * 0.45f);
+
+        foreach (Collider hit in hits)
+        {
+            if (Vector3Int.RoundToInt(hit.transform.position) == position)
+            {
+                Destroy(hit.gameObject);
+                break;
+            }
+        }
+        // Spawn the ore
+        SpawnBlocK(oreType, position);
+    }
+    
+    BlockType GetRandomOreType()
+    {
+        float roll = Random.value;
+
+        if (roll < coalChance)
+        {
+            return BlockType.Coal;
+        }
+        else if (roll < (coalChance + ironChance))
+        {
+            return BlockType.Iron;
+        }
+        else
+        {
+            return BlockType.Diamond;
+        }
+    }
+    
+    int GetVeinSize(BlockType oreType)
+    {
+        if (oreType == BlockType.Coal)
+        {
+            return Random.Range(6, 13);
+        }
+        else if (oreType == BlockType.Iron)
+        {
+            return Random.Range(4, 9);
+        }
+        else
+        {
+            return Random.Range(2, 5);
+        }
+    }
+    
+    void GenerateOres()
+    {
+        int numberOfVeins = 35;
+
+        for (int i = 0; i < numberOfVeins; i++)
+        {
+            if (stonePositions.Count == 0)
+            {
+                return;
+            }
+
+            Vector3Int startPos = Vector3Int.zero;
+            bool foundValidStart = false;
+            int tries = 0;
+
+            while (!foundValidStart && tries < 30)
+            {
+                Vector3Int randomPos = stonePositions[Random.Range(0, stonePositions.Count)];
+
+                if (blocks.ContainsKey(randomPos) && blocks[randomPos] == BlockType.Stone)
+                {
+                    startPos = randomPos;
+                    foundValidStart = true;
+                }
+
+                tries++;
+            }
+
+            if (!foundValidStart)
+            {
+                continue;
+            }
+            
+            Debug.Log("Valid ore vein start found at: " + startPos);
+
+            BlockType oreType = GetRandomOreType();
+            int veinSize = GetVeinSize(oreType);
+
+            GenerateOreVein(startPos, oreType, veinSize);
+        }
+    }
+    
+    void GenerateOreVein(Vector3Int startPos, BlockType oreType, int veinSize)
+    {
+        List<Vector3Int> veinBlocks = new List<Vector3Int>();
+
+        if (blocks.ContainsKey(startPos) && blocks[startPos] == BlockType.Stone)
+        {
+            ReplaceStoneWithOre(startPos, oreType);
+            veinBlocks.Add(startPos);
+        }
+        
+        if (veinBlocks.Count == 0)
+        {
+            return;
+        }
+
+        int attempts = 0;
+
+        while (veinBlocks.Count < veinSize && attempts < veinSize * 10)
+        {
+            Vector3Int basePos = veinBlocks[Random.Range(0, veinBlocks.Count)];
+
+            Vector3Int[] neighbors = new Vector3Int[]
+            {
+                basePos + Vector3Int.right,
+                basePos + Vector3Int.left,
+                basePos + Vector3Int.forward,
+                basePos + Vector3Int.back,
+                basePos + Vector3Int.up,
+                basePos + Vector3Int.down,
+                basePos + new Vector3Int(1, 0, 1),
+                basePos + new Vector3Int(-1, 0, 1),
+                basePos + new Vector3Int(1, 0, -1),
+                basePos + new Vector3Int(-1, 0, -1)
+            };
+
+            Vector3Int nextPos = neighbors[Random.Range(0, neighbors.Length)];
+
+            if (blocks.ContainsKey(nextPos) && blocks[nextPos] == BlockType.Stone)
+            {
+                ReplaceStoneWithOre(nextPos, oreType);
+                veinBlocks.Add(nextPos);
+            }
+
+            attempts++;
+        }
+    }
 
     void CreateCobble()
     {
@@ -346,6 +531,40 @@ public class GeneratingMeshes : MonoBehaviour
         leavesMesh.uv = uvs;
         leavesMesh.RecalculateNormals();
         
+    }
+
+    void CreateCoal()
+    {
+        AppyUVS(2, 13, 2, 13, 2, 13);
+        
+        coalMesh = new Mesh();
+        
+        coalMesh.vertices = vertices;
+        coalMesh.triangles = triangles;
+        coalMesh.uv = uvs;
+        coalMesh.RecalculateNormals();
+    }
+
+    void CreateIron()
+    {
+        AppyUVS(1, 13, 1, 13, 1, 13);
+        
+        ironMesh = new Mesh();
+        ironMesh.vertices = vertices;
+        ironMesh.triangles = triangles;
+        ironMesh.uv = uvs;
+        ironMesh.RecalculateNormals();
+    }
+
+    void CreateDiamond()
+    {
+        AppyUVS(2, 12, 2, 12, 2, 12);
+
+        diamondMesh = new Mesh();
+        diamondMesh.vertices = vertices;
+        diamondMesh.triangles = triangles;
+        diamondMesh.uv = uvs;
+        diamondMesh.RecalculateNormals();
     }
 
     void CreateMesh()
