@@ -5,6 +5,8 @@ public class CubeMovement : MonoBehaviour
     public float speed;
     
     bool isGameOver = false;
+    
+    public GameObject gameOverScreen;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -20,6 +22,7 @@ public class CubeMovement : MonoBehaviour
         {
             if (Vector3.Distance(transform.position, sphere.transform.position) <= 1)
             {
+                gameOverScreen.SetActive(true);
                 Time.timeScale = 0;
                 isGameOver = true;
             }

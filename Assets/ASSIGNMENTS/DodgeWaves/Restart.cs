@@ -9,6 +9,10 @@ public class Restart : MonoBehaviour
         
     }
 
+    public void RestartGame()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
     // Update is called once per frame
     void Update()
     {

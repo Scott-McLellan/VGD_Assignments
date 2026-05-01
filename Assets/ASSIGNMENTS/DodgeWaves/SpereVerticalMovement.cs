@@ -23,9 +23,12 @@ public class SpereVerticalMovement : MonoBehaviour
     
     private bool IsObjectsPaused;
     
+    public TMPro.TextMeshProUGUI waveText;
+    
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        
     }
 
     // Update is called once per frame
@@ -33,6 +36,8 @@ public class SpereVerticalMovement : MonoBehaviour
     {
         
         waveTimer += Time.deltaTime;
+
+        waveText.text = "Wave: " + waveText;
         
         scale = Random.Range(1f, 2.5f);
 
