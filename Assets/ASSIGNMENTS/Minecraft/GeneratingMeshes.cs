@@ -67,13 +67,14 @@ public class GeneratingMeshes : MonoBehaviour
     {
         Vector3Int intPosition = Vector3Int.RoundToInt(position);
 
-        if (blocks.ContainsKey(intPosition) && blocks[intPosition] != BlockType.Air)
+        if (blockType == BlockType.Air)
         {
-            Debug.LogWarning("Can't spawn a block when there is already a block at this position.");
+            Debug.LogWarning("Trying to spawn an Air block! That doesn't make sense...");
             return;
         }
-        
-        blocks.Add(intPosition, blockType);
+
+        blocks[intPosition] = blockType;
+        //blocks.Add(intPosition, blockType);
         
         if (blockType == BlockType.Air)
         {
@@ -122,6 +123,18 @@ public class GeneratingMeshes : MonoBehaviour
         MeshRenderer mr = cube.AddComponent<MeshRenderer>();
         mr.material = cubeMaterial;
     }
+    
+    public bool CanStepDownOneBlock(Vector3 currentPosition, Vector3 direction)
+    {
+        Vector3Int current = Vector3Int.RoundToInt(currentPosition);
+        Vector3Int dir = Vector3Int.RoundToInt(direction);
+
+        Vector3Int landingFeet = current + dir + Vector3Int.down;
+        Vector3Int landingHead = landingFeet + Vector3Int.up;
+        Vector3Int landingGround = landingFeet + Vector3Int.down;
+
+        return IsAir(landingFeet) && IsAir(landingHead) && IsSolid(landingGround);
+    }
 
     public void RemoveBlock(GameObject block)
     {
@@ -135,6 +148,100 @@ public class GeneratingMeshes : MonoBehaviour
         blocks.Remove(position);
         GameObject.Destroy(block);
     }
+    
+    public BlockType GetBlockType(Vector3Int position)
+    {
+        if (blocks.ContainsKey(position))
+        {
+            return blocks[position];
+        }
+
+        return BlockType.Air;
+    }
+
+    public bool IsAir(Vector3Int position)
+    {
+        return GetBlockType(position) == BlockType.Air;
+    }
+
+    public bool IsSolid(Vector3Int position)
+    {
+        return GetBlockType(position) != BlockType.Air;
+    }
+
+    public bool CanWalk(Vector3 currentPosition, Vector3 direction)
+    {
+        Vector3Int current = Vector3Int.RoundToInt(currentPosition);
+        Vector3Int dir = Vector3Int.RoundToInt(direction);
+
+        Vector3Int nextFeet = current + dir;
+        Vector3Int nextHead = nextFeet + Vector3Int.up;
+        Vector3Int nextGround = nextFeet + Vector3Int.down;
+
+        return IsAir(nextFeet) && IsAir(nextHead) && IsSolid(nextGround);
+    }
+
+    public bool CanJumpOneBlock(Vector3 currentPosition, Vector3 direction)
+    {
+        Vector3Int current = Vector3Int.RoundToInt(currentPosition);
+        Vector3Int dir = Vector3Int.RoundToInt(direction);
+
+        Vector3Int landingFeet = current + dir + Vector3Int.up;
+        Vector3Int landingHead = landingFeet + Vector3Int.up;
+        Vector3Int landingGround = landingFeet + Vector3Int.down;
+
+        return IsAir(landingFeet) && IsAir(landingHead) && IsSolid(landingGround);
+    }
+
+    public bool TryGetMovePosition(Vector3 currentPosition, Vector3 direction, out Vector3Int nextPosition)
+    {
+        Vector3Int current = new Vector3Int(
+            Mathf.FloorToInt(currentPosition.x),
+            Mathf.FloorToInt(currentPosition.y),
+            Mathf.FloorToInt(currentPosition.z)
+        );
+
+        Vector3Int dir = Vector3Int.RoundToInt(direction);
+
+        Vector3Int walkFeet = current + dir;
+        Vector3Int walkHead = walkFeet + Vector3Int.up;
+        Vector3Int walkGround = walkFeet + Vector3Int.down;
+
+        Vector3Int jumpFeet = current + dir + Vector3Int.up;
+        Vector3Int jumpHead = jumpFeet + Vector3Int.up;
+        Vector3Int jumpGround = jumpFeet + Vector3Int.down;
+
+        Vector3Int stepDownFeet = current + dir + Vector3Int.down;
+        Vector3Int stepDownHead = stepDownFeet + Vector3Int.up;
+        Vector3Int stepDownGround = stepDownFeet + Vector3Int.down;
+
+        if (IsAir(walkFeet) && IsAir(walkHead) && IsSolid(walkGround))
+        {
+            nextPosition = walkFeet;
+            return true;
+        }
+
+        Vector3Int forwardBlock = current + dir;
+
+        if (IsSolid(forwardBlock))
+        {
+            if (IsAir(jumpFeet) && IsAir(jumpHead) && IsSolid(jumpGround))
+            {
+                nextPosition = jumpFeet;
+                return true;
+            }
+        }
+
+        if (IsAir(stepDownFeet) && IsAir(stepDownHead) && IsSolid(stepDownGround))
+        {
+            nextPosition = stepDownFeet;
+            return true;
+        }
+
+        nextPosition = current;
+        return false;
+    }
+    
     
     // Start is called once before the first execution of Update
     void Start()
